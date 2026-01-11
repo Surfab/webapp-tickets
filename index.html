@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>🎉 Generatore di Biglietti di Compleanno</title>
+  <style>
+    /* Tema festivo generale */
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #fff5e6; /* tono pastello caldo */
+      color: #333;
+    }
+    header {
+      text-align: center;
+      padding: 20px;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #ffd966, #ffb347, #ffa07a);
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.08);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 800;
+      color: #4a2c01;
+    }
+    header p {
+      margin: 4px 0 0;
+      font-size: 16px;
+      opacity: .8;
+    }
+
+    /* Layout a due colonne */
+    .container {
+      display: flex;
+      gap: 20px;
+    }
+    .form-panel {
+      flex: 1;
+      max-width: 350px;
+      background: #fffaf0;
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.05);
+    }
+    .cards-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    /* Form */
+    label {
+      display: block;
+      margin: 10px 0 6px;
+      font-weight: 650;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,.15);
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #ffa07a;
+    }
+    .actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .primary { background: #ffa07a; color: #fff; }
+    .ghost { background: transparent; border: 1px solid #ffa07a; color: #ffa07a; }
+    button:active { transform: translateY(1px); }
+
+    /* Stile dei biglietti */
+    .card {
+      background: #fffdf5;
+      border: 2px dashed #ffa07a;
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.04);
+      white-space: pre-wrap;
+      line-height: 1.4;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎈 Crea il tuo messaggio di compleanno!</h1>
+    <p>Inserisci i dati e ottieni un augurio personalizzato e divertente.</p>
+  </header>
+
+  <div class="container">
+    <!-- Pannello del modulo -->
+    <div class="form-panel">
+      <label for="name">Nome</label>
+      <input id="name" placeholder="Es. Luca">
+
+      <label for="age">Età</label>
+      <input id="age" type="number" min="0" max="130" placeholder="Es. 30">
+
+      <label for="hobby">Hobby</label>
+      <input id="hobby" placeholder="Es. cinema">
+
+      <label for="tone">Stile</label>
+      <select id="tone">
+        <option value="friendly">Amichevole e ironico</option>
+        <option value="roast">Leggero roast</option>
+        <option value="sweet">Dolce con battutina</option>
+        <option value="short">Super corto</option>
+      </select>
+
+      <label for="extra">Dettaglio extra (facoltativo)</label>
+      <input id="extra" placeholder="Es. sempre in ritardo">
+
+      <div class="actions">
+        <button class="primary" id="generate">Genera</button>
+        <button class="ghost" id="clear">Pulisci</button>
+      </div>
+    </div>
+
+    <!-- Pannello dei biglietti -->
+    <div class="cards-panel" id="cards">
+      <!-- I biglietti generati appariranno qui -->
+    </div>
+  </div>
+
+<script>
+  // Sceglie un elemento casuale da un array
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+  // Costruisce il messaggio a partire dai dati
+  function buildMessage({ name, age, hobby, tone, extra }) {
+    const safeAge = Number.isFinite(age) ? clamp(age, 0, 130) : null;
+
+    const openers = {
+      friendly: [`${name}, tanti auguri!`, `Ehi ${name}, buon compleanno!`, `Auguri ${name}!`],
+      roast: [`${name}, eccoci: un altro livello sbloccato.`, `Buon compleanno, ${name}.`, `${name}, auguri!`],
+      sweet: [`Auguri di cuore, ${name}!`, `${name}, buon compleanno!`, `Tanti auguri ${name}!`],
+      short: [`Auguri ${name}!`, `Buon compleanno ${name}!`, `Tanti auguri ${name}!`]
+    };
+
+    const ageBits = (() => {
+      if (safeAge === null) return [];
+      const friendly = [
+        `${safeAge} anni, e ancora nessun segno di cedimento, a parte quando finisce la batteria.`,
+        `${safeAge}: l’età perfetta per essere giovane dentro e “organizzato” fuori.`,
+        `${safeAge} anni portati benissimo.`
+      ];
+      const roast = [
+        `${safeAge} anni, che in anni da hobby sono ${safeAge * 3}.`,
+        `${safeAge}: non è invecchiare, è diventare una versione premium.`,
+        `${safeAge}: ufficialmente abbastanza grande per dare consigli, abbastanza furbo/a per non seguirli.`
+      ];
+      const sweet = [
+        `${safeAge} anni di te, e il mondo è decisamente più interessante.`,
+        `${safeAge} candeline, ma la luce la fai tu.`,
+        `${safeAge} anni e si vede: stile, testa e cuore.`
+      ];
+      const short = [
+        `${safeAge} anni portati benissimo.`,
+        `${safeAge} e si vola.`,
+        `${safeAge} e non sentirli.`
+      ];
+      return tone === "friendly" ? friendly :
+             tone === "roast" ? roast :
+             tone === "sweet" ? sweet : short;
+    })();
+
+    const hobbyBits = (() => {
+      const generic = [
+        `Oggi la missione è semplice: torta, risate, e poi ${hobby} come se non ci fosse un domani.`,
+        `Spero che oggi tu riesca a ritagliarti tempo per ${hobby}.`,
+        `Più ${hobby}, meno stress.`
+      ];
+      const roastBits = [
+        `Che tu possa migliorare in ${hobby}. O almeno diventare convincente mentre improvvisi.`,
+        `Ti auguro un anno pieno di ${hobby}, e che tu smetta di parlarne come se fosse una religione.`,
+        `Che l’anno nuovo ti porti ${hobby}… e la capacità di non farne un monologo.`
+      ];
+      const sweetBits = [
+        `Ti auguro tante piccole gioie, e tante grandi giornate dedicate a ${hobby}.`,
+        `Che questo anno ti regali ancora più momenti felici con ${hobby}.`,
+        `Che tu possa coltivare ${hobby} con leggerezza, divertimento e persone giuste accanto.`
+      ];
+      const shortBits = [
+        `Torta, abbracci e ${hobby}.`,
+        `Più ${hobby}, meno stress.`,
+        `${hobby} e felicità.`
+      ];
+      return tone === "friendly" ? generic :
+             tone === "roast" ? roastBits :
+             tone === "sweet" ? sweetBits : shortBits;
+    })();
+
+    const closers = {
+      friendly: [`Un abbraccio!`, `Festeggia forte e poi raccontami tutto.`, `PS: la torta si accetta anche in formato consegna a domicilio.`],
+      roast: [`Dai, festeggia. Te lo sei meritato/a… più o meno.`, `Ora spegni le candeline prima che scatti l’allarme fumo.`, `Con affetto (e un filo di sarcasmo).`],
+      sweet: [`Ti voglio bene.`, `Che sia un anno bellissimo.`, `Un grande abbraccio.`],
+      short: [`Un abbraccio!`, `Auguri!`, `Buona festa!`]
+    };
+
+    const extraBit = extra ? `PS: "${extra}".` : null;
+
+    const parts = [];
+    parts.push(pick(openers[tone]));
+    if (tone !== "short") {
+      if (ageBits.length) parts.push(pick(ageBits));
+      parts.push(pick(hobbyBits));
+      if (extraBit) parts.push(extraBit);
+      parts.push(pick(closers[tone]));
+    } else {
+      const shortLine = [pick(ageBits), pick(hobbyBits)].filter(Boolean).join(" ");
+      parts.push(shortLine || `Passa una giornata top!`);
+    }
+    return parts.filter(Boolean).join("\n");
+  }
+
+  // Gestore per generare un nuovo biglietto
+  function generateCard() {
+    const name = document.getElementById("name").value.trim();
+    const ageRaw = document.getElementById("age").value.trim();
+    const hobby = document.getElementById("hobby").value.trim();
+    const tone = document.getElementById("tone").value;
+    const extra = document.getElementById("extra").value.trim();
+    const age = ageRaw === "" ? NaN : Number(ageRaw);
+
+    if (!name || !hobby) {
+      alert("Per favore inserisci sia il nome che l’hobby.");
+      return;
+    }
+
+    const message = buildMessage({ name, age, hobby, tone, extra });
+    const cardsContainer = document.getElementById("cards");
+    const card = document.createElement("div");
+    card.className = "card";
+    card.textContent = message;
+    cardsContainer.prepend(card); // aggiunge il nuovo biglietto in cima
+  }
+
+  // Pulizia del modulo
+  function clearForm() {
+    document.getElementById("name").value = "";
+    document.getElementById("age").value = "";
+    document.getElementById("hobby").value = "";
+    document.getElementById("extra").value = "";
+    document.getElementById("tone").value = "friendly";
+  }
+
+  document.getElementById("generate").addEventListener("click", generateCard);
+  document.getElementById("clear").addEventListener("click", clearForm);
+</script>
+</body>
+</html>
